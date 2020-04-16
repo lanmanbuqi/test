@@ -7,7 +7,8 @@
 
 <script>
 	import MainTabBar from "components/content/maintabbar/MainTabBar";
-export default {
+
+	export default {
   name: 'App',
   components: {
 		MainTabBar
@@ -17,4 +18,7 @@ export default {
 
 <style>
 @import "assets/css/base.css";
+	body{
+		overflow:hidden;
+	}
 </style>
