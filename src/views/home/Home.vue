@@ -1,12 +1,13 @@
 <template>
 	<div id="home" >
 		<nav-bar class="home-nav"><div slot="center">购物车</div> </nav-bar>
-		<scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll"
+		<tab-control :titles="['流行','新款','精选']" ref="tabcontrol2" v-show="foo" class="bartop" @tabClick="tabClick"></tab-control>
+		<scroll class="content" ref="scroll" :probe-type="3" @position="contentScroll"
 		:pull-up-load="true" @pullingUp="loadMore">
-			<home-swiper :banners="banners"></home-swiper>
+			<home-swiper @isload="loada" :banners="banners"></home-swiper>
 			<recommends :recommends="recommends"></recommends>
 			<feature></feature>
-			<tab-control :titles="['流行','新款','精选']" class="tab-control" @tabClick="tabClick"></tab-control>
+			<tab-control :titles="['流行','新款','精选']" ref="tabcontrol1"  @tabClick="tabClick"></tab-control>
 			<goods-list :goods="showGoods" />
 		</scroll>
 <!--		@click.native 监听一个组件的原生事件，必须要给对应事件加上。native修饰符-->
@@ -29,7 +30,6 @@
 	import Scroll from "components/common/scroll/Scroll";
 	import BackTop from "components/content/backtop/BackTop";
 	import {debounce} from "common/utils";
-
 
 	export default{
 		name:'Home',
@@ -55,7 +55,9 @@
 
 				},
 				currentType:'pop',
-				isShowBackTop:false
+				isShowBackTop:false,
+				offsetTop:0,
+				foo:false
 			}
 		},
 		computed:{
@@ -84,17 +86,26 @@
 			// 事件监听
 			tabClick(index){
 				this.currentType=Object.keys(this.goods)[index]
+				this.$refs.tabcontrol2.currentIndex=index
+				this.$refs.tabcontrol1.currentIndex=index
 			},
 			backClick(){
-
 				this.$refs.scroll.scrollTo(0,0)
 			},
 			contentScroll(position){
 					this.isShowBackTop = Math.abs(position.y) >1000
+					this.foo= Math.abs(position.y) >this.offsetTop
 			},
 			loadMore(){
 				this.getHomeGoods(this.currentType)
 			},
+			loada(){
+				this.offsetTop =this.$refs.tabcontrol1.$el.offsetTop
+
+			},
+
+
+
 			// 网络请求
 			getHomeMultidata(){
 				getHomeMultidata().then(res=>{
@@ -120,11 +131,7 @@
 	.home-nav{
 		background-color: var(--color-tint);
 		color:white;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 10;
+
 	}
 	#home{
 		/*margin-top: 44px;*/
@@ -132,13 +139,16 @@
 		position: relative;
 
 	}
-	.tab-control{
-		height: 48px;
-		line-height: 44px;
-		position: sticky;
-		top:44px;
-		z-index: 9;
+	.showa{
+		opacity: 0;
 	}
+
+	.bartop{
+		position: relative;
+		z-index: 2;
+
+	}
+
 	.content{
 		overflow: hidden;
 		position: absolute;
