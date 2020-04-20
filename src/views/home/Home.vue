@@ -57,7 +57,8 @@
 				currentType:'pop',
 				isShowBackTop:false,
 				offsetTop:0,
-				foo:false
+				foo:false,
+				saveY:0
 			}
 		},
 		computed:{
@@ -65,6 +66,13 @@
 				return this.goods[this.currentType].list
 
 			}
+		},
+		activated() {
+			this.$refs.scroll.refresh()
+			this.$refs.scroll.scrollTo(0,this.saveY,0)
+		},
+		deactivated() {
+			this.saveY=this.$refs.scroll.scroll.y
 		},
 		created() {
 			//1.请求多个数据
@@ -77,8 +85,14 @@
 			 const refresh=debounce(this.$refs.scroll && this.$refs.scroll.refresh,300)
 			//监听图片加载完成
 			this.$bus.$on('imgLoad',()=>{
-				 // this.$refs.scroll && this.$refs.scroll.refresh()
-				 refresh()
+				// this.$refs.scroll && this.$refs.scroll.refresh()
+				refresh()
+			})
+		},
+		destroyed() {
+			this.$bus.$off('imgLoad',()=>{
+				// this.$refs.scroll && this.$refs.scroll.refresh()
+				refresh()
 			})
 		},
 		methods:{
