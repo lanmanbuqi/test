@@ -3,7 +3,14 @@ import App from './App.vue'
 import router from './router/index'
 import store from './store'
 import toast from "components/common/toast/index";
+import lazy from "vue-lazyload";
 
+import { Icon } from 'vant';
+import { Image } from 'vant';
+
+Vue.use(Image);
+Vue.use(Icon);
+Vue.use(lazy,{loading:require("assets/img/common/load.png")})
 //安装toast插件
 
 Vue.config.productionTip = false

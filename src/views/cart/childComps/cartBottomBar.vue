@@ -35,10 +35,10 @@
 						}
 					},
 					calcClick(){
-
 						if(!this.isSelectAll){
 							this.$toast.show('请选择购买的商品',2000)
-							}else{
+							}
+						if(this.$store.getters.cartList.find(item=>item.checked==true)){
 							this.$toast.show('已提交',2000)
 						}
 		    	}
