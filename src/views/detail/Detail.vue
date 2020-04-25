@@ -1,16 +1,22 @@
 <template>
 	<div id ='detail' >
-		<detail-nav-bar ></detail-nav-bar>
-		<scroll class="content" ref="scroll">
+		<detail-nav-bar @titleClick="titleClick" ref="nav" />
+		<scroll class="content"
+						ref="scroll"
+						@position="contentScroll"
+						:probe-type="3">
 			<detail-swiper :top-images="topImages"/>
 			<detail-base-info :goods="goods"/>
 			<detail-shop-info :shop="shop"/>
-			<detail-images-info :imagesInfo="detailInfo"/>
-			<detail-param-info :param-info="paramInfo"/>
-			<detail-eval-info :commentInfo="EvalInfo"/>
-			<detail-recommend/>
-			<goods-list :goods="recommends"/>
+			<detail-images-info :images-info="detailInfo"/>
+			<detail-param-info ref="params" :param-info="paramInfo"/>
+			<detail-eval-info ref="eval" :comment-info="EvalInfo"/>
+			<detail-recommend ref="commend"/>
+			<goods-list  :goods="recommends"/>
 		</scroll>
+		<back-top @click.native="backClick" v-show="isShowBackTop"/>
+		<detail-bottom-bar @addCart="addToCart"/>
+
 	</div>
 </template>
 
@@ -27,8 +33,13 @@
 		import DetailEvalInfo from "./childComps/DetailEvalInfo";
 		import DetailRecommend from "./childComps/DetailRecommend";
 		import GoodsList from "components/content/goods/GoodsList";
+		import DetailBottomBar from "./childComps/DetailBottomBar";
+		import {backTopMixin} from 'common/mixin.js'
+
+
 		export default {
 			name: "Detail",
+			mixins:[backTopMixin],
 			components: {
 				DetailNavBar,
 				DetailSwiper,
@@ -39,7 +50,9 @@
 				DetailParamInfo,
 				DetailEvalInfo,
 				DetailRecommend,
-				GoodsList
+				GoodsList,
+				DetailBottomBar,
+
 			},
 			data(){
         	return{
@@ -52,8 +65,50 @@
 						detailimgLoad:null,
 						detailImgLoad:null,
 						EvalInfo:{},
-						recommends:[]
+						recommends:[],
+						themeTopYs:[],
+						getThemetopY:null,
+						currentIndex:0
+
 					}
+			},
+			methods:{
+				addToCart(){
+					const  product={};
+					product.image=this.topImages[0];
+					product.title=this.goods.title;
+					product.desc=this.goods.desc;
+					product.price=this.goods.realPrice;
+					product.iid=this.iid;
+
+					//添加到仓库
+					this.$store.dispatch('addCart',product).then(res=>{
+						this.$toast.show(res,1500)
+					})
+
+				},
+
+
+
+				//监听滚动位置存储在themeTopYs中
+				titleClick(index){
+					this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],300)
+				},
+				//滚动控制title的变化
+				contentScroll(position){
+					let length=this.themeTopYs.length
+					const positionY =-position.y
+
+					for(let i=0;i<length;i++){
+						if(this.currentIndex !==i && (i < length-1 && positionY > this.themeTopYs[i] && positionY < this.themeTopYs[i+1])
+							||(i == length-1 && positionY>this.themeTopYs[i])){
+							this.currentIndex=i;
+							this.$refs.nav.currentIndex=this.currentIndex
+						}
+					}
+
+					this.isShowBackTop = Math.abs(position.y) >1000
+				}
 			},
 			created() {
 				//获取iid
@@ -91,12 +146,23 @@
 						this.recommends=res.data.list
 				})
 
+
+				this.getThemetopY=debounce(()=>{
+					//把titles里各个主键的y值加入themeTopYs数组
+					this.themeTopYs=[]
+					this.themeTopYs.push(0)
+					this.themeTopYs.push(this.$refs.params.$el.offsetTop);
+					this.themeTopYs.push(this.$refs.eval.$el.offsetTop);
+					this.themeTopYs.push(this.$refs.commend.$el.offsetTop);
+
+				},100)
 			},
 			mounted(){
 				const refresh=debounce(this.$refs.scroll && this.$refs.scroll.refresh,200)
 				//监听图片加载完成
 				this.detailimgLoad=()=>{
 					// this.$refs.scroll && this.$refs.scroll.refresh()
+					this.getThemetopY()
 					refresh()
 				}
 				this.$bus.$on('detailimgLoad',this.detailimgLoad)
@@ -105,6 +171,10 @@
 					refresh()
 				}
 				this.$bus.$on('detailImgLoad',	this.detailImgLoad)
+
+
+
+
 			},
 			destroyed(){
 				//  	取消监听全局事件
@@ -126,6 +196,7 @@
 		overflow: hidden;
 		position: absolute;
 		top:44px;
-		bottom:0px;
+		bottom:49px;
 	}
+
 </style>

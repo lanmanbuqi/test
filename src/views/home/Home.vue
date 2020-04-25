@@ -7,7 +7,7 @@
 			<home-swiper @isload="loada" :banners="banners"></home-swiper>
 			<recommends :recommends="recommends"></recommends>
 			<feature></feature>
-			<tab-control :titles="['流行','新款','精选']" ref="tabcontrol1"  @tabClick="tabClick"></tab-control>
+			<tab-control :titles="['流行','新款','精选']" ref="tabcontrol1" class="bartop1" @tabClick="tabClick"></tab-control>
 			<goods-list :goods="showGoods" />
 		</scroll>
 <!--		@click.native 监听一个组件的原生事件，必须要给对应事件加上。native修饰符-->
@@ -156,10 +156,15 @@
 	.showa{
 		opacity: 0;
 	}
-
+	.bartop1{
+		line-height: 44px;
+		height: 44px;
+	}
 	.bartop{
 		position: relative;
 		z-index: 2;
+		height: 44px;
+		line-height: 44px;
 
 	}
 
